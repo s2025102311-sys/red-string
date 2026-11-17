@@ -2,8 +2,8 @@ from flask_login import LoginManager, login_user, logout_user, login_required, c
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, render_template, redirect, url_for, flash, request
 from flask import Flask, render_template
-from models import db, User, Profile
-from datetime import date
+from models import db, User, Profile, Measurement, HealthStatus
+from datetime import datetime, date
 
 app = Flask(__name__)
 
@@ -95,7 +95,35 @@ def logout():
 @app.route('/profile')
 @login_required  # Protects this page
 def profile():
-    return render_template('profile.html')
+    uid = current_user.id
+
+    latest_weight = Measurement.query.filter_by(user_id=uid, type="weight") \
+        .order_by(Measurement.date_measured.desc(), Measurement.id.desc()).first()
+
+    latest_height = Measurement.query.filter_by(user_id=uid, type="height") \
+        .order_by(Measurement.date_measured.desc(), Measurement.id.desc()).first()
+
+    latest_health = HealthStatus.query.filter_by(user_id=uid) \
+        .order_by(HealthStatus.date_checked.desc(), HealthStatus.id.desc()).first()
+
+    # Calculate BMI: weight (kg) / (height in meters)^2
+    bmi = None
+    bmi_date = None
+    if latest_weight and latest_height and latest_height.value > 0:
+        height_m = latest_height.value / 100.0
+        bmi = round(latest_weight.value / (height_m ** 2), 1)
+        # Use the more recent date between weight and height
+        bmi_date = max(latest_weight.date_measured, latest_height.date_measured)
+
+    return render_template(
+        'profile.html',
+        user=current_user,
+        latest_weight=latest_weight,
+        latest_height=latest_height,
+        latest_health=latest_health,
+        bmi=bmi,
+        bmi_date=bmi_date
+    )
 
 def calculate_age(born):
     if not born:
@@ -151,6 +179,55 @@ def profile_page():
     user_profile = Profile.query.filter_by(user_id=current_user.id).first()
     age = calculate_age(user_profile.birthdate) if user_profile and user_profile.birthdate else None
     return render_template('profile.html', profile=user_profile, age=age)
+
+@app.route('/health-info', methods=['GET', 'POST'])
+@login_required
+def health_info():
+    if request.method == 'POST':
+        form_type = request.form.get('form_type')
+
+    # 1. Save Weight & Height Measurements
+        if form_type == 'measurement':
+            weight = request.form.get('weight')
+            height = request.form.get('height')
+            date_str = request.form.get('date_measured')
+            date_measured = datetime.strptime(date_str, '%Y-%m-%d').date()
+    
+            if weight:
+                db.session.add(Measurement(
+                    user_id=current_user.id,
+                    type="weight",
+                    value=float(weight),
+                    date_measured=date_measured
+                ))
+            if height:
+                db.session.add(Measurement(
+                    user_id=current_user.id,
+                    type="height",
+                    value=float(height),
+                    date_measured=date_measured
+                ))
+        db.session.commit()
+        flash('Body measurements saved!', 'success')
+
+            # 2. Save Health Status
+        if form_type == 'health_status':
+            is_healthy = request.form.get('is_healthy') == 'healthy'
+            notes = request.form.get('notes')
+            checkup_str = request.form.get('checkup_date')
+            checkup_date = datetime.strptime(checkup_str, '%Y-%m-%d').date()
+
+            db.session.add(HealthStatus(
+                user_id=current_user.id,
+                status=is_healthy,
+                notes=notes,
+                date_checked=checkup_date
+            ))
+            db.session.commit()
+            flash('Health status updated!', 'success')
+
+        return redirect(url_for('profile'))
+    return render_template('health_info.html')
 
 if __name__ == '__main__':
     app.run(debug=True)

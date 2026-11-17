@@ -25,4 +25,57 @@
         <a href="{{ url_for('public_profile', username=current_user.username) }}" style="margin-left: 10px; padding: 10px 20px; background: #333; color: white; text-decoration: none; border-radius: 4px;">View Public Profile</a>
     </div>
 </div>
+
+<div class="card mt-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h3>Body & Health Information 
+    <a href="{{ url_for('health_info') }}" style="display: inline-block; padding: 4px 12px; margin-left: 10px; font-size: 14px; font-weight: normal; color: #fff; background-color: #0d6efd; border-radius: 4px; text-decoration: none;">Update Health Info</a>
+    </h3>
+  </div>
+  <div class="card-body">
+    <p>
+      <strong>Weight:</strong>
+      {% if latest_weight %}
+        {{ latest_weight.value }} kg (measured {{ latest_weight.date_measured.strftime('%b %d, %Y').replace(' 0', ' ') }})
+      {% else %}
+        Not recorded yet
+      {% endif %}
+    </p>
+
+    <p>
+      <strong>Height:</strong>
+      {% if latest_height %}
+        {{ latest_height.value }} cm (measured {{ latest_height.date_measured.strftime('%b %d, %Y').replace(' 0', ' ') }})
+      {% else %}
+        Not recorded yet
+      {% endif %}
+    </p>
+
+    <p>
+      <strong>BMI:</strong>
+      {% if bmi %}
+        BMI {{ bmi }} (as of {{ bmi_date.strftime('%b %d, %Y').replace(' 0', ' ') }})
+      {% else %}
+        Add both weight and height to calculate BMI
+      {% endif %}
+    </p>
+
+    <hr>
+
+    <p>
+      <strong>Health Status:</strong>
+      {% if latest_health %}
+        <span class="badge {{ 'bg-success' if latest_health.is_healthy else 'bg-warning text-dark' }}">
+          {{ 'Healthy' if latest_health.is_healthy else 'Not Healthy' }}
+        </span>
+        (last check-up {{ latest_health.date_checked.strftime('%b %d, %Y').replace(' 0', ' ') }})
+        {% if latest_health.notes %}
+          <br><small class="text-muted">Notes: {{ latest_health.notes }}</small>
+        {% endif %}
+      {% else %}
+        Not recorded yet
+      {% endif %}
+    </p>
+  </div>
+</div>
 {% endblock %}

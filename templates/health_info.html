@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container mt-4">
+    <h2>Update Body & Health Information</h2>
+    
+    <!-- Form 1: Body Measurements -->
+    <div class="card mb-4">
+        <div class="card-header"><strong>Body Measurements</strong></div>
+        <div class="card-body">
+            <form method="POST">
+                <input type="hidden" name="form_type" value="measurement">
+                <div class="mb-3">
+                    <label class="form-label">Weight (kg)</label>
+                    <input type="number" step="0.1" name="weight" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Height (cm)</label>
+                    <input type="number" step="0.1" name="height" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Date Measured</label>
+                    <input type="date" name="date_measured" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Measurements</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Form 2: Health Status -->
+    <div class="card mb-4">
+        <div class="card-header"><strong>Health Status & Eligibility</strong></div>
+        <div class="card-body">
+            <form method="POST">
+                <input type="hidden" name="form_type" value="health_status">
+                <div class="mb-3 form-check">
+                    <input type="checkbox" name="is_healthy" class="form-check-input" id="isHealthyCheck" value="y">
+                    <label class="form-check-label" for="isHealthyCheck">Eligible / Healthy for Donation</label>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Check-up Date</label>
+                    <input type="date" name="checkup_date" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Health Notes</label>
+                    <textarea name="notes" class="form-control" rows="3"></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Save Health Status</button>
+            </form>
+        </div>
+    </div>
+    
+    <a href="{{ url_for('profile') }}" class="btn btn-secondary mb-4">Back to Profile</a>
+</div>
+{% endblock %}
