@@ -9,7 +9,7 @@
             {{ user.username[0] | upper }}
         </div>
         <div>
-            <h2>{{ profile.name or user.username }}</h2>
+            <h2>{{ profile.full_name or user.username }}</h2>
             <span style="background: #9b0000; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;">
                 {{ profile.blood_type or 'Unknown Blood' }}
             </span>

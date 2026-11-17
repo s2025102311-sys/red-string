@@ -2,7 +2,7 @@
 {% block title %}My Profile - Blood Donor Registry{% endblock %}
 {% block content %}
 <div style="max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fff;">
-    <h2>Welcome, {{ current_user.username }}!</h2>
+    <h2>Welcome, {{ profile.full_name or current_user.username }}!</h2>
     <p><strong>Email:</strong> {{ current_user.email }}</p>
     
     <hr style="margin: 20px 0;">
@@ -65,8 +65,8 @@
     <p>
       <strong>Health Status:</strong>
       {% if latest_health %}
-        <span class="badge {{ 'bg-success' if latest_health.is_healthy else 'bg-warning text-dark' }}">
-          {{ 'Healthy' if latest_health.is_healthy else 'Not Healthy' }}
+        <span class="badge {{ 'bg-success' if latest_health.status == 'Healthy' else 'bg-warning text-dark' }}">
+          {{ latest_health.status }}
         </span>
         (last check-up {{ latest_health.date_checked.strftime('%b %d, %Y').replace(' 0', ' ') }})
         {% if latest_health.notes %}
@@ -107,7 +107,7 @@
                 <li class="list-group-item">
                     <strong>{{ d.date_donated.strftime('%b %d, %Y').replace(' 0', ' ') }}</strong> — {{ d.location }} 
                     {% if d.event_name %}({{ d.event_name }}){% endif %}
-                    {% if d.community %} | Community: {{ d.community }}{% endif %}
+                    {% if d.community %} | Community: {{ d.community.name }}{% endif %}
                 </li>
             {% endfor %}
         </ul>

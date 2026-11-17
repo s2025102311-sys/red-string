@@ -1,3 +1,6 @@
+import os
+import secrets
+
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, render_template, redirect, url_for, flash, request
@@ -6,10 +9,26 @@ from datetime import datetime, date, timedelta
 
 app = Flask(__name__)
 
+def get_secret_key():
+    """Uses the SECRET_KEY environment variable if set, otherwise a random key
+    generated once and saved in instance/secret_key (gitignored)."""
+    env_key = os.environ.get('SECRET_KEY')
+    if env_key:
+        return env_key
+    os.makedirs(app.instance_path, exist_ok=True)
+    key_path = os.path.join(app.instance_path, 'secret_key')
+    if os.path.exists(key_path):
+        with open(key_path) as f:
+            return f.read().strip()
+    key = secrets.token_hex(32)
+    with open(key_path, 'w') as f:
+        f.write(key)
+    return key
+
 # Configure SQLite database file and secret key
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///registry.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'super-secret-key-change-later'
+app.config['SECRET_KEY'] = get_secret_key()
 
 db.init_app(app)
 
@@ -33,23 +52,91 @@ def calculate_age(born):
     today = date.today()
     return today.year - born.year - ((today.month, today.day) < (born.month, born.day))
 
+BLOOD_TYPES = {'A+', 'A-', 'B+', 'B-', 'AB+', 'AB-', 'O+', 'O-'}
+
+def validate_profile_form(form):
+    """Validates the edit-profile form. Returns (cleaned_values, errors)."""
+    errors = []
+    full_name = (form.get('full_name') or '').strip()
+    location = (form.get('location') or '').strip()
+    sex = (form.get('sex') or '').strip()
+    bio = (form.get('bio') or '').strip()
+    blood_type = (form.get('blood_type') or '').strip()
+
+    if len(full_name) > 100:
+        errors.append('Full name must be 100 characters or fewer.')
+    if len(location) > 100:
+        errors.append('Location must be 100 characters or fewer.')
+    if len(sex) > 20:
+        errors.append('Sex must be 20 characters or fewer.')
+    if len(bio) > 1000:
+        errors.append('Bio must be 1000 characters or fewer.')
+    if blood_type and blood_type not in BLOOD_TYPES:
+        errors.append('Please choose a valid blood type.')
+
+    birthdate = None
+    birthdate_str = (form.get('birthdate') or '').strip()
+    if birthdate_str:
+        try:
+            birthdate = date.fromisoformat(birthdate_str)
+        except ValueError:
+            errors.append('Birthdate is not a valid date.')
+        else:
+            if birthdate > date.today():
+                errors.append('Birthdate cannot be in the future.')
+            elif calculate_age(birthdate) > 120:
+                errors.append('Please enter a realistic birthdate.')
+
+    cleaned = {
+        'full_name': full_name or None,
+        'location': location or None,
+        'sex': sex or None,
+        'bio': bio or None,
+        'blood_type': blood_type or None,
+        'birthdate': birthdate,  # None clears the birthdate
+        'is_public': form.get('is_public') == 'on',
+    }
+    return cleaned, errors
+
+def get_badge(total):
+    """Returns the credential badge name for a given number of donations."""
+    if total >= 10:
+        return "Champion"
+    elif total >= 5:
+        return "Lifesaver"
+    elif total >= 3:
+        return "Regular"
+    elif total >= 1:
+        return "First Drop"
+    return "Newcomer"
+
+def donation_stats(donations):
+    """Returns (donations in the last 12 months, average days between donations)."""
+    one_year_ago = date.today() - timedelta(days=365)
+    last_12_months = sum(1 for d in donations if d.date_donated >= one_year_ago)
+
+    avg_gap = None
+    if len(donations) >= 2:
+        dates = sorted(d.date_donated for d in donations)
+        gaps = [(dates[i] - dates[i - 1]).days for i in range(1, len(dates))]
+        avg_gap = round(sum(gaps) / len(gaps))
+    return last_12_months, avg_gap
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """Handles new user registration, password hashing, and profile initialization."""
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
-        
-        if password != confirm_password:
-            flash('Passwords do not match.', 'error')
-            return redirect(url_for('register'))
-            
-        user_exists = User.query.filter((User.username == username) | (User.email == email)).first()
-        if user_exists:
-            flash('Username or email already taken.', 'error')
-            return redirect(url_for('register'))
+        cleaned, errors = validate_profile_form(request.form)
+        if errors:
+            for message in errors:
+                flash(message, 'error')
+            return render_template('edit_profile.html', profile=user_profile)
+
+        for field, value in cleaned.items():
+            setattr(user_profile, field, value)
+        db.session.commit()
+        flash('Profile updated successfully!', 'success')
+        return redirect(url_for('profile'))
             
         hashed_password = generate_password_hash(password)
         new_user = User(username=username, email=email, password_hash=hashed_password)
@@ -128,16 +215,8 @@ def profile():
     total_donations = len(donations)
     points = total_donations * 10
     
-    if total_donations >= 10:
-        badge = "Champion"
-    elif total_donations >= 5:
-        badge = "Lifesaver"
-    elif total_donations >= 3:
-        badge = "Regular"
-    elif total_donations >= 1:
-        badge = "First Drop"
-    else:
-        badge = "Newcomer"
+    badge = get_badge(total_donations)
+    last_12_months, avg_gap = donation_stats(donations) 
         
     last_donated = donations[0].date_donated if donations else None
     next_eligible = last_donated + timedelta(weeks=8) if last_donated else None
@@ -157,8 +236,11 @@ def profile():
         points=points,
         badge=badge,
         last_donated=last_donated,
-        next_eligible=next_eligible
+        next_eligible=next_eligible,
+        last_12_months=last_12_months,
+        avg_gap=avg_gap
     )
+    
 
 @app.route('/profile/edit', methods=['GET', 'POST'])
 @login_required
@@ -200,7 +282,23 @@ def public_profile(username):
         return redirect(url_for('home'))
 
     age = calculate_age(profile.birthdate) if profile else None
-    return render_template('public_profile.html', user=user, profile=profile, age=age)
+
+    donations = Donation.query.filter_by(user_id=user.id).order_by(Donation.date_donated.desc()).all()
+    total_donations = len(donations)
+    last_12_months, avg_gap = donation_stats(donations)
+
+    return render_template(
+        'public_profile.html',
+        user=user,
+        profile=profile,
+        age=age,
+        donations=donations,
+        total_donations=total_donations,
+        points=total_donations * 10,
+        badge=get_badge(total_donations),
+        last_12_months=last_12_months,
+        avg_gap=avg_gap
+    )
 
 @app.route('/health-info', methods=['GET', 'POST'])
 @login_required
