@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile - Blood Donor Registry{% endblock %}
+{% block content %}
+<h2>Edit Your Profile</h2>
+<form method="POST">
+    <div style="margin-bottom: 12px;">
+        <label>Full Name:</label><br>
+        <input type="text" name="full_name" value="{{ profile.name or '' }}" style="width: 100%; padding: 8px;">
+    </div>
+    <div style="margin-bottom: 12px;">
+        <label>Location / Area:</label><br>
+        <input type="text" name="location" value="{{ profile.location or '' }}" style="width: 100%; padding: 8px;">
+    </div>
+    <div style="margin-bottom: 12px;">
+        <label>Blood Type:</label><br>
+        <select name="blood_type" style="width: 100%; padding: 8px;">
+            <option value="">Select...</option>
+            <option value="A+" {% if profile.blood_type == 'A+' %}selected{% endif %}>A+</option>
+            <option value="A-" {% if profile.blood_type == 'A-' %}selected{% endif %}>A-</option>
+            <option value="B+" {% if profile.blood_type == 'B+' %}selected{% endif %}>B+</option>
+            <option value="B-" {% if profile.blood_type == 'B-' %}selected{% endif %}>B-</option>
+            <option value="AB+" {% if profile.blood_type == 'AB+' %}selected{% endif %}>AB+</option>
+            <option value="AB-" {% if profile.blood_type == 'AB-' %}selected{% endif %}>AB-</option>
+            <option value="O+" {% if profile.blood_type == 'O+' %}selected{% endif %}>O+</option>
+            <option value="O-" {% if profile.blood_type == 'O-' %}selected{% endif %}>O-</option>
+        </select>
+    </div>
+    <div style="margin-bottom: 12px;">
+        <label>Sex:</label><br>
+        <input type="text" name="sex" value="{{ profile.sex or '' }}" style="width: 100%; padding: 8px;">
+    </div>
+    <div style="margin-bottom: 12px;">
+        <label>Birthdate:</label><br>
+        <input type="date" name="birthdate" value="{{ profile.birthdate or '' }}" style="width: 100%; padding: 8px;">
+    </div>
+    <div style="margin-bottom: 12px;">
+        <label>Bio:</label><br>
+        <textarea name="bio" rows="4" style="width: 100%; padding: 8px;">{{ profile.bio or '' }}</textarea>
+    </div>
+    <div style="margin-bottom: 12px;">
+        <label>
+            <input type="checkbox" name="is_public" {% if profile.is_public %}checked{% endif %}> Make profile public
+        </label>
+    </div>
+    <button type="submit" style="padding: 10px 20px; background: #9b0000; color: white; border: none; cursor: pointer;">Save Changes</button>
+</form>
+{% endblock %}

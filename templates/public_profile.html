@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ user.username }}'s Profile - Blood Donor Registry{% endblock %}
+{% block content %}
+<div style="max-width: 600px; margin: auto; display: flex; flex-direction: column; gap: 20px;">
+    
+    <!-- 1. Header Card -->
+    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd; display: flex; align-items: center; gap: 20px;">
+        <div style="width: 80px; height: 80px; background: #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff;">
+            {{ user.username[0] | upper }}
+        </div>
+        <div>
+            <h2>{{ profile.name or user.username }}</h2>
+            <span style="background: #9b0000; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;">
+                {{ profile.blood_type or 'Unknown Blood' }}
+            </span>
+        </div>
+    </div>
+
+    <!-- 2. Info Section Card -->
+    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+        <h3>Information</h3>
+        <p><strong>Location:</strong> {{ profile.location or 'Not specified' }}</p>
+        <p><strong>Sex:</strong> {{ profile.sex or 'Not specified' }}</p>
+        <p><strong>Age:</strong> {{ age if age else 'Not specified' }}</p>
+        <p><strong>Bio:</strong> {{ profile.bio or 'No bio provided yet.' }}</p>
+    </div>
+
+    <!-- 3. Donation Section Card (Empty for now) -->
+    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+        <h3>Donation History</h3>
+        <p style="color: #666; font-style: italic;">No donation records yet.</p>
+    </div>
+
+    <!-- 4. Communities Section Card (Empty for now) -->
+    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+        <h3>Communities</h3>
+        <p style="color: #666; font-style: italic;">Not part of any communities yet.</p>
+    </div>
+
+</div>
+{% endblock %}

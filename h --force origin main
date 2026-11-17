@@ -1,0 +1,6 @@
+[33maef584e[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Phase 5: Public profile, edit profile and public views
+[33mdb28023[m Phase 3 & 4: Authentication and user system
+[33m8252aa2[m Second commit - Added base of template and navigation bar
+[33mcc0ad21[m Merge branch 'main' of https://github.com/s2025102311-sys/red-string In this commit, we start off with the creation of the project itself in its early, beginning stages, before anything is actually functional inside of it aside from the viewable html link. Further phases will demonstrate necessary progress in the creation and integration of functions that the website will have.
+[33mc20bea6[m First Commit - Red String Blood Registry Flask Project
+[33ma289f8f[m Initial commit
