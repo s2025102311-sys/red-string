@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Add Donation - Blood Donor Registry{% endblock %}
+{% block content %}
+<div style="max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fff;">
+    <h2>Add Donation Record</h2>
+    <form method="POST">
+        <div class="mb-3" style="margin-bottom: 15px;">
+            <label class="form-label" style="display: block; margin-bottom: 5px; font-weight: bold;">Date Donated</label>
+            <input type="date" name="date_donated" class="form-control" required style="width: 100%; padding: 8px; box-sizing: border-box;">
+        </div>
+        <div class="mb-3" style="margin-bottom: 15px;">
+            <label class="form-label" style="display: block; margin-bottom: 5px; font-weight: bold;">Location</label>
+            <input type="text" name="location" class="form-control" required placeholder="e.g., Red Cross Chapter" style="width: 100%; padding: 8px; box-sizing: border-box;">
+        </div>
+        <div class="mb-3" style="margin-bottom: 15px;">
+            <label class="form-label" style="display: block; margin-bottom: 5px; font-weight: bold;">Event / Program Name</label>
+            <input type="text" name="event_name" class="form-control" placeholder="e.g., Barangay Blood Drive" style="width: 100%; padding: 8px; box-sizing: border-box;">
+        </div>
+        <div style="margin-top: 20px;">
+            <button type="submit" class="btn btn-primary" style="padding: 10px 20px; background: #9b0000; color: white; border: none; border-radius: 4px; cursor: pointer;">Save Donation</button>
+            <a href="{{ url_for('profile') }}" style="margin-left: 10px; padding: 10px 20px; background: #333; color: white; text-decoration: none; border-radius: 4px;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
