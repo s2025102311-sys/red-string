@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Learn - Red String{% endblock %}
+{% block content %}
+<div style="max-width: 800px; margin: auto;">
+    <h2>Learn About Blood Donation</h2>
+
+    {% for category, facts in grouped %}
+    <h3 style="color: #9b0000; margin-top: 30px;">{{ category }}</h3>
+    {% for f in facts %}
+    <div style="background: #f9f9f9; padding: 15px 20px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 12px;">
+        <strong>{{ f.title }}</strong>
+        <p style="margin: 8px 0;">{{ f.body }}</p>
+        {% if f.source %}<p style="color: #666; font-size: 0.9em; margin: 0;">Source: {{ f.source }}</p>{% endif %}
+    </div>
+    {% endfor %}
+    {% else %}
+    <p style="color: #666; font-style: italic;">No facts yet. Run seed.py to add some.</p>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,10 +1,11 @@
 import os
+import re
 import secrets
 
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, render_template, redirect, url_for, flash, request
-from models import db, User, Profile, Measurement, HealthStatus, Donation, Community, CommunityMember
+from models import db, User, Profile, Measurement, HealthStatus, Donation, Community, CommunityMember, TriviaFact
 from datetime import datetime, date, timedelta
 
 app = Flask(__name__)
@@ -39,11 +40,33 @@ login_manager.login_view = 'login'
 @login_manager.user_loader
 def load_user(user_id):
     """Loads a user object from the database by user ID for Flask-Login."""
-    return User.query.get(int(user_id))
+    return db.session.get(User, int(user_id))
 
 # Automatically create database tables on startup
 with app.app_context():
     db.create_all()
+
+USERNAME_RE = re.compile(r'^[A-Za-z0-9_]{3,30}$')
+EMAIL_RE = re.compile(r'^[^@\s]+@[^@\s]+\.[^@\s]+$')
+
+@app.context_processor
+def inject_today():
+    """Makes today's date (YYYY-MM-DD) available to templates, e.g. as a max for date inputs."""
+    return {'today': date.today().isoformat()}
+
+def parse_date(value, default=None):
+    """Parses a YYYY-MM-DD string. Blank returns `default`; bad input raises ValueError."""
+    value = (value or '').strip()
+    if not value:
+        return default
+    return datetime.strptime(value, '%Y-%m-%d').date()
+
+def parse_number(value, low, high):
+    """Parses a number that must be between low and high. Raises ValueError otherwise."""
+    number = float(value)
+    if not (low <= number <= high):  # also rejects nan
+        raise ValueError('out of range')
+    return number
 
 def calculate_age(born):
     """Helper function to calculate a user's current age based on birthdate."""
@@ -138,16 +161,25 @@ def get_user_communities(user_id):
 def register():
     """Handles new user registration, password hashing, and profile initialization."""
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
-        password = request.form.get('password')
-        confirm_password = request.form.get('confirm_password')
+        username = (request.form.get('username') or '').strip()
+        email = (request.form.get('email') or '').strip().lower()
+        password = request.form.get('password') or ''
+        confirm_password = request.form.get('confirm_password') or ''
 
+        if not USERNAME_RE.match(username):
+            flash('Username must be 3-30 characters: letters, numbers and underscores only.', 'error')
+            return redirect(url_for('register'))
+        if len(email) > 120 or not EMAIL_RE.match(email):
+            flash('Please enter a valid email address.', 'error')
+            return redirect(url_for('register'))
+        if len(password) < 8:
+            flash('Password must be at least 8 characters.', 'error')
+            return redirect(url_for('register'))
         if password != confirm_password:
             flash('Passwords do not match.', 'error')
             return redirect(url_for('register'))
 
-        user_exists = User.query.filter((User.username == username) | (User.email == email)).first()
+        user_exists = User.query.filter((db.func.lower(User.username) == username.lower()) | (User.email == email)).first()
         if user_exists:
             flash('Username or email already taken.', 'error')
             return redirect(url_for('register'))
@@ -168,17 +200,29 @@ def register():
 
 @app.route("/")
 def home():
-    """Renders the home page."""
-    return render_template("index.html")
+    """Renders the home page with a random "Did you know?" trivia fact."""
+    fact = TriviaFact.query.order_by(db.func.random()).first()
+    return render_template("index.html", fact=fact)
+
+LEARN_CATEGORIES = ['Blood types', 'Donation tips', 'Myths']
+
+@app.route('/learn')
+def learn():
+    """Lists all trivia facts grouped by category."""
+    facts = TriviaFact.query.order_by(TriviaFact.id).all()
+    categories = LEARN_CATEGORIES + sorted({f.category for f in facts} - set(LEARN_CATEGORIES))
+    grouped = [(c, [f for f in facts if f.category == c]) for c in categories]
+    grouped = [(c, fs) for c, fs in grouped if fs]
+    return render_template('learn.html', grouped=grouped)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     """Handles user login credentials verification and session creation."""
     if request.method == 'POST':
-        email = request.form.get('email')
-        password = request.form.get('password')
-        
-        user = User.query.filter_by(email=email).first()
+        email = (request.form.get('email') or '').strip().lower()
+        password = request.form.get('password') or ''
+
+        user = User.query.filter(db.func.lower(User.email) == email).first()
         if user and check_password_hash(user.password_hash, password):
             login_user(user)
             flash('Logged in successfully!', 'success')
@@ -320,38 +364,47 @@ def health_info():
         form_type = request.form.get('form_type')
 
         if form_type == 'measurement':
-            weight = request.form.get('weight')
-            height = request.form.get('height')
-            date_str = request.form.get('date_measured')
-            date_measured = datetime.strptime(date_str, '%Y-%m-%d').date() if date_str else date.today()
-    
-            if weight:
-                db.session.add(Measurement(
-                    user_id=current_user.id,
-                    type="weight",
-                    value=float(weight),
-                    date_measured=date_measured
-                ))
-            if height:
-                db.session.add(Measurement(
-                    user_id=current_user.id,
-                    type="height",
-                    value=float(height),
-                    date_measured=date_measured
-                ))
+            weight_str = (request.form.get('weight') or '').strip()
+            height_str = (request.form.get('height') or '').strip()
+            try:
+                date_measured = parse_date(request.form.get('date_measured'), date.today())
+                weight = parse_number(weight_str, 1, 500) if weight_str else None
+                height = parse_number(height_str, 30, 280) if height_str else None
+            except ValueError:
+                flash('Please enter a valid date, weight (1-500 kg) and height (30-280 cm).', 'error')
+                return render_template('health_info.html')
+            if date_measured > date.today():
+                flash('Measurement date cannot be in the future.', 'error')
+                return render_template('health_info.html')
+
+            if weight is not None:
+                db.session.add(Measurement(user_id=current_user.id, type="weight",
+                                           value=weight, date_measured=date_measured))
+            if height is not None:
+                db.session.add(Measurement(user_id=current_user.id, type="height",
+                                           value=height, date_measured=date_measured))
             db.session.commit()
             flash('Body measurements saved!', 'success')
 
         elif form_type == 'health_status':
             is_healthy_val = "Healthy" if request.form.get('is_healthy') == 'y' else "Not Healthy"
-            notes = request.form.get('notes')
-            checkup_str = request.form.get('checkup_date')
-            checkup_date = datetime.strptime(checkup_str, '%Y-%m-%d').date() if checkup_str else date.today()
+            notes = (request.form.get('notes') or '').strip()
+            if len(notes) > 1000:
+                flash('Notes must be 1000 characters or fewer.', 'error')
+                return render_template('health_info.html')
+            try:
+                checkup_date = parse_date(request.form.get('checkup_date'), date.today())
+            except ValueError:
+                flash('Please enter a valid check-up date.', 'error')
+                return render_template('health_info.html')
+            if checkup_date > date.today():
+                flash('Check-up date cannot be in the future.', 'error')
+                return render_template('health_info.html')
 
             db.session.add(HealthStatus(
                 user_id=current_user.id,
                 status=is_healthy_val,
-                notes=notes,
+                notes=notes or None,
                 date_checked=checkup_date
             ))
             db.session.commit()
@@ -386,7 +439,15 @@ def add_donation():
                 return render_template('add_donation.html', my_communities=my_communities)
 
         try:
-            date_donated = datetime.strptime(date_str, '%Y-%m-%d').date()
+            date_donated = datetime.strptime(date_str or '', '%Y-%m-%d').date()
+        except ValueError:
+            flash('Please enter a valid donation date.', 'error')
+            return render_template('add_donation.html', my_communities=my_communities)
+        if date_donated > date.today():
+            flash('Donation date cannot be in the future.', 'error')
+            return render_template('add_donation.html', my_communities=my_communities)
+
+        try:
             new_donation = Donation(
                 user_id=current_user.id,
                 date_donated=date_donated,
@@ -398,8 +459,9 @@ def add_donation():
             db.session.commit()
             flash('Donation record added successfully!', 'success')
             return redirect(url_for('profile'))
-        except Exception as e:
-            flash(f'Error adding donation: {e}', 'danger')
+        except Exception:
+            db.session.rollback()
+            flash('Could not save the donation. Please try again.', 'error')
 
     return render_template('add_donation.html', my_communities=my_communities)
 

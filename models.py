@@ -67,6 +67,7 @@ class CommunityMember(db.Model):
 
 class TriviaFact(db.Model):
     id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String(50), nullable=False)
     title = db.Column(db.String(150), nullable=False)
     body = db.Column(db.Text, nullable=False)
-    category = db.Column(db.String(50), nullable=False)
+    source = db.Column(db.String(100))

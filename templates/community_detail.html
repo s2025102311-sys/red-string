@@ -25,7 +25,13 @@
         <h3>Members ({{ members | length }})</h3>
         <ul style="padding-left: 20px;">
             {% for m in members %}
-            <li><a href="{{ url_for('public_profile', username=m.username) }}">{{ m.username }}</a></li>
+            <li>
+                {% if m.profile and m.profile.is_public %}
+                    <a href="{{ url_for('public_profile', username=m.username) }}">{{ m.username }}</a>
+                {% else %}
+                    <span style="color: #666;">Private member</span>
+                {% endif %}
+            </li>
             {% endfor %}
         </ul>
     </div>

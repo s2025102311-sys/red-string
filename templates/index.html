@@ -2,5 +2,33 @@
 
 {% block content %}
   <h1>Welcome to Red String</h1>
+  <p class="lead">
+    Legend says an invisible red string links people who are meant to find each
+    other. Here, that string is real. It runs from every donor to a patient they
+    may never meet, and every donation pulls it tighter.
+  </p>
   <p>Connect with donors, track your donations, and join like-minded communities.</p>
+
+  <p style="margin: 20px 0;">
+    <a href="{{ url_for('profile') }}"
+       style="background: #800020; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; margin-right: 10px;">
+      Complete My Profile
+    </a>
+    <a href="{{ url_for('communities') }}"
+       style="border: 2px solid #800020; color: #800020; padding: 8px 20px; border-radius: 6px; text-decoration: none;">
+      Explore Communities
+    </a>
+  </p>
+
+  {% if fact %}
+  <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd; border-left: 5px solid #9b0000; margin-top: 20px;">
+    <h3 style="margin-top: 0;">Did you know?</h3>
+    <p><strong>{{ fact.title }}</strong></p>
+    <p>{{ fact.body }}</p>
+    <p style="color: #666; font-size: 0.9em;">
+      {% if fact.source %}Source: {{ fact.source }} &middot; {% endif %}
+      <a href="{{ url_for('learn') }}">More on the Learn page</a>
+    </p>
+  </div>
+  {% endif %}
 {% endblock %}
