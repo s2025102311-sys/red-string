@@ -4,7 +4,7 @@ import secrets
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask import Flask, render_template, redirect, url_for, flash, request
-from models import db, User, Profile, Measurement, HealthStatus, Donation, Community
+from models import db, User, Profile, Measurement, HealthStatus, Donation, Community, CommunityMember
 from datetime import datetime, date, timedelta
 
 app = Flask(__name__)
@@ -122,34 +122,48 @@ def donation_stats(donations):
         avg_gap = round(sum(gaps) / len(gaps))
     return last_12_months, avg_gap
 
+def get_user_communities(user_id):
+    """Returns a list of (community, number of that user's donations in it) for a user."""
+    memberships = CommunityMember.query.filter_by(user_id=user_id).all()
+    result = []
+    for m in memberships:
+        community = db.session.get(Community, m.community_id)
+        count = Donation.query.filter_by(user_id=user_id, community_id=m.community_id).count()
+        result.append((community, count))
+    result.sort(key=lambda pair: pair[0].name.lower())
+    return result
+
+
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     """Handles new user registration, password hashing, and profile initialization."""
     if request.method == 'POST':
-        cleaned, errors = validate_profile_form(request.form)
-        if errors:
-            for message in errors:
-                flash(message, 'error')
-            return render_template('edit_profile.html', profile=user_profile)
+        username = request.form.get('username')
+        email = request.form.get('email')
+        password = request.form.get('password')
+        confirm_password = request.form.get('confirm_password')
 
-        for field, value in cleaned.items():
-            setattr(user_profile, field, value)
-        db.session.commit()
-        flash('Profile updated successfully!', 'success')
-        return redirect(url_for('profile'))
-            
+        if password != confirm_password:
+            flash('Passwords do not match.', 'error')
+            return redirect(url_for('register'))
+
+        user_exists = User.query.filter((User.username == username) | (User.email == email)).first()
+        if user_exists:
+            flash('Username or email already taken.', 'error')
+            return redirect(url_for('register'))
+
         hashed_password = generate_password_hash(password)
         new_user = User(username=username, email=email, password_hash=hashed_password)
         db.session.add(new_user)
         db.session.commit()
-        
+
         new_profile = Profile(user_id=new_user.id)
         db.session.add(new_profile)
         db.session.commit()
-        
+
         flash('Registration successful! Please log in.', 'success')
         return redirect(url_for('login'))
-        
+
     return render_template('register.html')
 
 @app.route("/")
@@ -238,7 +252,8 @@ def profile():
         last_donated=last_donated,
         next_eligible=next_eligible,
         last_12_months=last_12_months,
-        avg_gap=avg_gap
+        avg_gap=avg_gap,
+        user_communities=get_user_communities(uid)
     )
     
 
@@ -253,18 +268,14 @@ def edit_profile():
         db.session.commit()
 
     if request.method == 'POST':
-        user_profile.full_name = request.form.get('full_name')
-        user_profile.location = request.form.get('location')
-        user_profile.blood_type = request.form.get('blood_type')
-        user_profile.sex = request.form.get('sex')
-        
-        birthdate_str = request.form.get('birthdate')
-        if birthdate_str:
-            user_profile.birthdate = date.fromisoformat(birthdate_str)
-            
-        user_profile.bio = request.form.get('bio')
-        user_profile.is_public = True if request.form.get('is_public') == 'on' else False
-        
+        cleaned, errors = validate_profile_form(request.form)
+        if errors:
+            for message in errors:
+                flash(message, 'error')
+            return render_template('edit_profile.html', profile=user_profile)
+
+        for field, value in cleaned.items():
+            setattr(user_profile, field, value)
         db.session.commit()
         flash('Profile updated successfully!', 'success')
         return redirect(url_for('profile'))
@@ -297,7 +308,8 @@ def public_profile(username):
         points=total_donations * 10,
         badge=get_badge(total_donations),
         last_12_months=last_12_months,
-        avg_gap=avg_gap
+        avg_gap=avg_gap,
+        user_communities=get_user_communities(user.id)
     )
 
 @app.route('/health-info', methods=['GET', 'POST'])
@@ -351,12 +363,28 @@ def health_info():
 @app.route('/add_donation', methods=['GET', 'POST'])
 @login_required
 def add_donation():
-    """Handles logging new blood donation records to update user credentials, point counts, and timelines."""
+    """Handles logging new blood donation records, optionally under one of the user's communities."""
+    my_communities = db.session.query(Community) \
+        .join(CommunityMember, CommunityMember.community_id == Community.id) \
+        .filter(CommunityMember.user_id == current_user.id) \
+        .order_by(Community.name).all()
+
     if request.method == 'POST':
         date_str = request.form.get('date_donated')
         location = request.form.get('location')
         event_name = request.form.get('event_name')
-        
+        community_id_str = request.form.get('community_id')
+
+        # Only allow communities the logged-in user has actually joined
+        community_id = None
+        if community_id_str:
+            allowed_ids = {c.id for c in my_communities}
+            if community_id_str.isdigit() and int(community_id_str) in allowed_ids:
+                community_id = int(community_id_str)
+            else:
+                flash('Please choose one of your own communities.', 'error')
+                return render_template('add_donation.html', my_communities=my_communities)
+
         try:
             date_donated = datetime.strptime(date_str, '%Y-%m-%d').date()
             new_donation = Donation(
@@ -364,7 +392,7 @@ def add_donation():
                 date_donated=date_donated,
                 location=location,
                 event_name=event_name,
-                community_id=None
+                community_id=community_id
             )
             db.session.add(new_donation)
             db.session.commit()
@@ -372,8 +400,76 @@ def add_donation():
             return redirect(url_for('profile'))
         except Exception as e:
             flash(f'Error adding donation: {e}', 'danger')
-        
-    return render_template('add_donation.html')
+
+    return render_template('add_donation.html', my_communities=my_communities)
+
+@app.route('/communities')
+def communities():
+    """Lists all communities with their member counts."""
+    all_communities = Community.query.order_by(Community.name).all()
+    return render_template('communities.html', communities=all_communities)
+
+@app.route('/communities/new', methods=['GET', 'POST'])
+@login_required
+def create_community():
+    """Creates a community and automatically adds the creator as its first member."""
+    if request.method == 'POST':
+        name = (request.form.get('name') or '').strip()
+        description = (request.form.get('description') or '').strip()
+
+        if not name:
+            flash('Community name is required.', 'error')
+        elif len(name) > 100:
+            flash('Community name must be 100 characters or fewer.', 'error')
+        elif len(description) > 1000:
+            flash('Description must be 1000 characters or fewer.', 'error')
+        elif Community.query.filter(db.func.lower(Community.name) == name.lower()).first():
+            flash('A community with that name already exists.', 'error')
+        else:
+            community = Community(name=name, description=description or None, created_by=current_user.id)
+            db.session.add(community)
+            db.session.commit()
+            db.session.add(CommunityMember(user_id=current_user.id, community_id=community.id))
+            db.session.commit()
+            flash('Community created!', 'success')
+            return redirect(url_for('community_detail', community_id=community.id))
+
+    return render_template('create_community.html')
+
+@app.route('/communities/<int:community_id>')
+def community_detail(community_id):
+    """Shows a community's description and member list, with join/leave buttons."""
+    community = db.get_or_404(Community, community_id)
+    members = db.session.query(User) \
+        .join(CommunityMember, CommunityMember.user_id == User.id) \
+        .filter(CommunityMember.community_id == community.id).all()
+    is_member = current_user.is_authenticated and any(m.id == current_user.id for m in members)
+    return render_template('community_detail.html', community=community, members=members, is_member=is_member)
+
+@app.route('/communities/<int:community_id>/join', methods=['POST'])
+@login_required
+def join_community(community_id):
+    community = db.get_or_404(Community, community_id)
+    already = CommunityMember.query.filter_by(user_id=current_user.id, community_id=community.id).first()
+    if not already:
+        db.session.add(CommunityMember(user_id=current_user.id, community_id=community.id))
+        db.session.commit()
+        flash(f'You joined {community.name}!', 'success')
+    return redirect(url_for('community_detail', community_id=community.id))
+
+@app.route('/communities/<int:community_id>/leave', methods=['POST'])
+@login_required
+def leave_community(community_id):
+    community = db.get_or_404(Community, community_id)
+    if community.created_by == current_user.id:
+        flash('The creator cannot leave their own community.', 'error')
+    else:
+        membership = CommunityMember.query.filter_by(user_id=current_user.id, community_id=community.id).first()
+        if membership:
+            db.session.delete(membership)
+            db.session.commit()
+            flash(f'You left {community.name}.', 'info')
+    return redirect(url_for('community_detail', community_id=community.id))
 
 if __name__ == '__main__':
     app.run(debug=True)

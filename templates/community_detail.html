@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ community.name }} - Red String{% endblock %}
+{% block content %}
+<div style="max-width: 700px; margin: auto; display: flex; flex-direction: column; gap: 20px;">
+
+    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+        <h2>{{ community.name }}</h2>
+        <p>{{ community.description or 'No description yet.' }}</p>
+        {% if current_user.is_authenticated %}
+            {% if is_member %}
+                <form method="POST" action="{{ url_for('leave_community', community_id=community.id) }}">
+                    <button type="submit" style="padding: 8px 16px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer;">Leave</button>
+                </form>
+            {% else %}
+                <form method="POST" action="{{ url_for('join_community', community_id=community.id) }}">
+                    <button type="submit" style="padding: 8px 16px; background: #9b0000; color: white; border: none; border-radius: 4px; cursor: pointer;">Join</button>
+                </form>
+            {% endif %}
+        {% else %}
+            <p><a href="{{ url_for('login') }}">Log in</a> to join this community.</p>
+        {% endif %}
+    </div>
+
+    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+        <h3>Members ({{ members | length }})</h3>
+        <ul style="padding-left: 20px;">
+            {% for m in members %}
+            <li><a href="{{ url_for('public_profile', username=m.username) }}">{{ m.username }}</a></li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+        <h3>Donations ({{ community.donations | length }})</h3>
+        {% if community.donations %}
+        <ul style="padding-left: 20px;">
+            {% for d in community.donations | sort(attribute='date_donated', reverse=true) %}
+            <li>
+                <strong>{{ d.date_donated.strftime('%b %d, %Y').replace(' 0', ' ') }}</strong> &mdash; {{ d.location }}
+                {% if d.event_name %}({{ d.event_name }}){% endif %}
+                by
+                {% if d.user.profile and d.user.profile.is_public %}
+                    <a href="{{ url_for('public_profile', username=d.user.username) }}">{{ d.user.username }}</a>
+                {% else %}
+                    an anonymous donor
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p style="color: #666; font-style: italic;">No donations logged under this community yet.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

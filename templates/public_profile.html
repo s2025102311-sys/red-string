@@ -25,16 +25,43 @@
         <p><strong>Bio:</strong> {{ profile.bio or 'No bio provided yet.' }}</p>
     </div>
 
-    <!-- 3. Donation Section Card (Empty for now) -->
+    <!-- 3. Donation Section Card -->
     <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
         <h3>Donation History</h3>
-        <p style="color: #666; font-style: italic;">No donation records yet.</p>
+        <p><strong>Badge:</strong> <span style="background: #9b0000; color: white; padding: 2px 8px; border-radius: 4px;">{{ badge }}</span>
+           &nbsp; <strong>Points:</strong> {{ points }} pts</p>
+        <p><strong>Total Donations:</strong> {{ total_donations }}
+           &nbsp;|&nbsp; <strong>Last 12 Months:</strong> {{ last_12_months }}
+           {% if avg_gap is not none %}&nbsp;|&nbsp; <strong>Avg Gap:</strong> {{ avg_gap }} days{% endif %}</p>
+        {% if donations %}
+            <ul style="padding-left: 20px;">
+                {% for d in donations %}
+                    <li>
+                        <strong>{{ d.date_donated.strftime('%b %d, %Y').replace(' 0', ' ') }}</strong> — {{ d.location }}
+                        {% if d.event_name %}({{ d.event_name }}){% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="color: #666; font-style: italic;">No donation records yet.</p>
+        {% endif %}
     </div>
 
-    <!-- 4. Communities Section Card (Empty for now) -->
+    <!-- 4. Communities Section Card -->
     <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
         <h3>Communities</h3>
-        <p style="color: #666; font-style: italic;">Not part of any communities yet.</p>
+        {% if user_communities %}
+            <ul style="padding-left: 20px;">
+                {% for community, count in user_communities %}
+                <li>
+                    <a href="{{ url_for('community_detail', community_id=community.id) }}">{{ community.name }}</a>
+                    &mdash; {{ count }} donation{{ '' if count == 1 else 's' }}
+                </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p style="color: #666; font-style: italic;">Not part of any communities yet.</p>
+        {% endif %}
     </div>
 
 </div>
