@@ -4,20 +4,18 @@
 <div style="max-width: 600px; margin: auto; display: flex; flex-direction: column; gap: 20px;">
     
     <!-- 1. Header Card -->
-    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd; display: flex; align-items: center; gap: 20px;">
-        <div style="width: 80px; height: 80px; background: #ccc; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff;">
-            {{ user.username[0] | upper }}
-        </div>
+    <div class="rs-card" style="display: flex; align-items: center; gap: 20px;">
+        <img src="{{ avatar_url(profile) }}" alt="{{ user.username }}'s profile picture" class="avatar avatar-lg">
         <div>
-            <h2>{{ profile.full_name or user.username }}</h2>
-            <span style="background: #9b0000; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold;">
+            <h2 style="margin: 0 0 8px;">{{ profile.full_name or user.username }}</h2>
+            <span class="pill">
                 {{ profile.blood_type or 'Unknown Blood' }}
             </span>
         </div>
     </div>
 
     <!-- 2. Info Section Card -->
-    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+    <div class="rs-card">
         <h3>Information</h3>
         <p><strong>Location:</strong> {{ profile.location or 'Not specified' }}</p>
         <p><strong>Sex:</strong> {{ profile.sex or 'Not specified' }}</p>
@@ -26,9 +24,9 @@
     </div>
 
     <!-- 3. Donation Section Card -->
-    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+    <div class="rs-card">
         <h3>Donation History</h3>
-        <p><strong>Badge:</strong> <span style="background: #9b0000; color: white; padding: 2px 8px; border-radius: 4px;">{{ badge }}</span>
+        <p><strong>Badge:</strong> <span class="pill">{{ badge }}</span>
            &nbsp; <strong>Points:</strong> {{ points }} pts</p>
         <p><strong>Total Donations:</strong> {{ total_donations }}
            &nbsp;|&nbsp; <strong>Last 12 Months:</strong> {{ last_12_months }}
@@ -43,12 +41,12 @@
                 {% endfor %}
             </ul>
         {% else %}
-            <p style="color: #666; font-style: italic;">No donation records yet.</p>
+            <p class="muted" style="font-style: italic;">No donation records yet.</p>
         {% endif %}
     </div>
 
     <!-- 4. Communities Section Card -->
-    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+    <div class="rs-card">
         <h3>Communities</h3>
         {% if user_communities %}
             <ul style="padding-left: 20px;">
@@ -60,7 +58,7 @@
                 {% endfor %}
             </ul>
         {% else %}
-            <p style="color: #666; font-style: italic;">Not part of any communities yet.</p>
+            <p class="muted" style="font-style: italic;">Not part of any communities yet.</p>
         {% endif %}
     </div>
 

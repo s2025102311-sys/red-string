@@ -1,9 +1,17 @@
 {% extends "base.html" %}
 {% block title %}My Profile - Blood Donor Registry{% endblock %}
 {% block content %}
-<div style="max-width: 600px; margin: 20px auto; padding: 20px; border: 1px solid #ddd; border-radius: 8px; background: #fff;">
-    <h2>Welcome, {{ profile.full_name or current_user.username }}!</h2>
-    <p><strong>Email:</strong> {{ current_user.email }}</p>
+<div class="rs-card form-card">
+    <div class="profile-header">
+        <img src="{{ avatar_url(profile) }}" alt="Profile picture" class="avatar avatar-lg">
+        <div>
+            <h2 style="margin: 0 0 4px;">{{ profile.full_name or current_user.username }}</h2>
+            <p class="muted" style="margin: 0 0 8px;">@{{ current_user.username }}</p>
+            {% if profile and profile.blood_type %}<span class="pill">{{ profile.blood_type }}</span>{% endif %}
+            <span class="pill pill-outline">{{ badge }}</span>
+        </div>
+    </div>
+    <p style="margin-top: 16px;"><strong>Email:</strong> {{ current_user.email }}</p>
     
     <hr style="margin: 20px 0;">
     
@@ -21,15 +29,15 @@
     {% endif %}
 
     <div style="margin-top: 20px;">
-        <a href="{{ url_for('edit_profile') }}" style="padding: 10px 20px; background: #9b0000; color: white; text-decoration: none; border-radius: 4px;">Edit Profile</a>
-        <a href="{{ url_for('public_profile', username=current_user.username) }}" style="margin-left: 10px; padding: 10px 20px; background: #333; color: white; text-decoration: none; border-radius: 4px;">View Public Profile</a>
+        <a href="{{ url_for('edit_profile') }}" class="rs-btn">Edit Profile</a>
+        <a href="{{ url_for('public_profile', username=current_user.username) }}" class="rs-btn rs-btn-ghost" style="margin-left: 10px;">View Public Profile</a>
     </div>
 </div>
 
 <div class="card mt-4" style="max-width: 600px; margin: 20px auto;">
   <div class="card-header d-flex justify-content-between align-items-center">
     <h3>Body & Health Information 
-    <a href="{{ url_for('health_info') }}" style="display: inline-block; padding: 4px 12px; margin-left: 10px; font-size: 14px; font-weight: normal; color: #fff; background-color: #0d6efd; border-radius: 4px; text-decoration: none;">Update Health Info</a>
+    <a href="{{ url_for('health_info') }}" class="rs-btn rs-btn-sm" style="margin-left: 10px; font-size: 16px;">Update Health Info</a>
     </h3>
   </div>
   <div class="card-body">
@@ -101,7 +109,7 @@
     {% endif %}
 
     <div style="margin-top: 15px; margin-bottom: 20px;">
-        <a href="{{ url_for('add_donation') }}" class="btn btn-primary btn-sm" style="padding: 8px 16px; background-color: #0d6efd; color: white; text-decoration: none; border-radius: 4px;">Add Donation Record</a>
+        <a href="{{ url_for('add_donation') }}" class="rs-btn rs-btn-sm">Add Donation Record</a>
     </div>
 
     <h5>Donation Timeline</h5>
@@ -120,7 +128,7 @@
     {% endif %}
   </div>
 </div>
-<div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-top: 20px;">
+<div class="rs-card form-card">
     <h3>My Communities</h3>
     {% if user_communities %}
         <ul style="padding-left: 20px;">

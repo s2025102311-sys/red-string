@@ -3,17 +3,17 @@
 {% block content %}
 <div style="max-width: 700px; margin: auto; display: flex; flex-direction: column; gap: 20px;">
 
-    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
-        <h2>{{ community.name }}</h2>
+    <div class="rs-card">
+        <h2 class="page-title" style="margin-top:0;">{{ community.name }}</h2>
         <p>{{ community.description or 'No description yet.' }}</p>
         {% if current_user.is_authenticated %}
             {% if is_member %}
                 <form method="POST" action="{{ url_for('leave_community', community_id=community.id) }}">
-                    <button type="submit" style="padding: 8px 16px; background: #333; color: white; border: none; border-radius: 4px; cursor: pointer;">Leave</button>
+                    <button type="submit" class="rs-btn rs-btn-sm rs-btn-ghost">Leave</button>
                 </form>
             {% else %}
                 <form method="POST" action="{{ url_for('join_community', community_id=community.id) }}">
-                    <button type="submit" style="padding: 8px 16px; background: #9b0000; color: white; border: none; border-radius: 4px; cursor: pointer;">Join</button>
+                    <button type="submit" class="rs-btn rs-btn-sm">Join</button>
                 </form>
             {% endif %}
         {% else %}
@@ -21,22 +21,23 @@
         {% endif %}
     </div>
 
-    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+    <div class="rs-card">
         <h3>Members ({{ members | length }})</h3>
-        <ul style="padding-left: 20px;">
+        <ul class="member-list">
             {% for m in members %}
-            <li>
+            <li class="member-item">
+                <img src="{{ avatar_url(m.profile) }}" alt="" class="avatar avatar-sm">
                 {% if m.profile and m.profile.is_public %}
                     <a href="{{ url_for('public_profile', username=m.username) }}">{{ m.username }}</a>
                 {% else %}
-                    <span style="color: #666;">Private member</span>
+                    <span class="muted">Private member</span>
                 {% endif %}
             </li>
             {% endfor %}
         </ul>
     </div>
 
-    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd;">
+    <div class="rs-card">
         <h3>Donations ({{ community.donations | length }})</h3>
         {% if community.donations %}
         <ul style="padding-left: 20px;">
@@ -54,7 +55,7 @@
             {% endfor %}
         </ul>
         {% else %}
-        <p style="color: #666; font-style: italic;">No donations logged under this community yet.</p>
+        <p class="muted" style="font-style: italic;">No donations logged under this community yet.</p>
         {% endif %}
     </div>
 </div>

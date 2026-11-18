@@ -1,8 +1,20 @@
 {% extends "base.html" %}
 {% block title %}Edit Profile - Blood Donor Registry{% endblock %}
 {% block content %}
-<h2>Edit Your Profile</h2>
-<form method="POST">
+<h2 class="page-title">Edit Your Profile</h2>
+<form method="POST" enctype="multipart/form-data">
+    <div class="profile-header" style="margin-bottom: 20px;">
+        <img id="avatar-preview" src="{{ avatar_url(profile) }}" alt="Current profile picture" class="avatar avatar-lg">
+        <div>
+            <label for="picture"><strong>Profile picture</strong></label><br>
+            <input type="file" id="picture" name="picture" accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                   onchange="if (this.files[0]) document.getElementById('avatar-preview').src = URL.createObjectURL(this.files[0]);">
+            <p class="muted" style="font-size: 0.85rem; margin: 4px 0;">PNG or JPG, up to 2 MB.</p>
+            {% if profile.picture_filename and profile.picture_filename != 'default.jpg' %}
+            <label style="font-size: 0.9rem;"><input type="checkbox" name="remove_picture"> Remove my picture</label>
+            {% endif %}
+        </div>
+    </div>
     <div style="margin-bottom: 12px;">
         <label>Full Name:</label><br>
         <input type="text" name="full_name" value="{{ profile.full_name or '' }}" style="width: 100%; padding: 8px;">
@@ -42,6 +54,6 @@
             <input type="checkbox" name="is_public" {% if profile.is_public %}checked{% endif %}> Make profile public
         </label>
     </div>
-    <button type="submit" style="padding: 10px 20px; background: #9b0000; color: white; border: none; cursor: pointer;">Save Changes</button>
+    <button type="submit" class="rs-btn">Save Changes</button>
 </form>
 {% endblock %}

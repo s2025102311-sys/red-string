@@ -1,29 +1,16 @@
+/* ---------- Base ---------- */
+:root {
+  --red: #B5271E;
+  --red-dark: #8B1A1A;
+  --cream: #F4F1EC;
+  --cream-text: #FFF3D6;
+}
+
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Poppins', Arial, sans-serif;
   margin: 0;
-  background: #f7f7f7;
+  background: var(--cream);
   color: #222;
-}
-
-.navbar {
-  background: #7F011F;
-  color: #F5EBD0;
-  padding: 14px 24px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.navbar a {
-  color: white;
-  text-decoration: none;
-  margin-left: 16px;
-}
-
-.navbar .brand {
-  font-weight: bold;
-  font-size: 1.2rem;
-  margin-left: 0;
 }
 
 .container {
@@ -34,5 +21,599 @@ body {
 
 .flash {
   background: #ffe9e9;
+  color: #222;
   padding: 10px 24px;
 }
+
+/* ---------- Navbar ---------- */
+.site-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  padding: 14px 32px;
+  background: var(--cream);
+}
+
+.site-brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  text-decoration: none;
+}
+
+.logo-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  background: var(--red);
+  border-radius: 14px;
+  box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.25);
+}
+
+.logo-img {
+  height: 60px;
+  width: auto;
+  border-radius: 14px;
+}
+
+.brand-text {
+  font-family: 'Lobster Two', cursive;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 2rem;
+  color: var(--red);
+  text-shadow: 2px 2px 3px rgba(0, 0, 0, 0.3);
+}
+
+.nav-links {
+  display: flex;
+  gap: 28px;
+}
+
+.nav-links a,
+.nav-login {
+  font-family: 'Fira Sans Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--red);
+  text-decoration: none;
+}
+
+.nav-links a:hover,
+.nav-login:hover {
+  color: var(--red-dark);
+  text-decoration: underline;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+/* ---------- Buttons ---------- */
+.rs-btn {
+  display: inline-block;
+  background: var(--red);
+  color: #fff;
+  font-family: 'Fira Sans Condensed', sans-serif;
+  font-weight: 600;
+  font-size: 1.05rem;
+  padding: 10px 30px;
+  border-radius: 8px;
+  text-decoration: none;
+  box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.35);
+  transition: background 0.15s, transform 0.15s;
+}
+
+.rs-btn:hover {
+  background: var(--red-dark);
+  color: #fff;
+  transform: translateY(-1px);
+}
+
+.rs-btn-sm {
+  padding: 8px 24px;
+}
+
+/* ---------- Social-media feel (cards, avatars, pills) ---------- */
+.rs-card {
+  background: #fff;
+  color: #222;
+  border: 1px solid #e3d9d3;
+  border-radius: 16px;
+  padding: 20px 24px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+}
+
+.card-link {
+  color: var(--red);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.card-link:hover {
+  color: var(--red-dark);
+  text-decoration: underline;
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  background: #eadfd9;
+  border: 3px solid #fff;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+}
+.avatar-sm { width: 36px;  height: 36px;  border-width: 2px; }
+.avatar-lg { width: 110px; height: 110px; }
+
+.pill {
+  display: inline-block;
+  background: var(--red);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 3px 14px;
+  border-radius: 999px;
+}
+
+.pill-outline {
+  background: transparent;
+  color: var(--red);
+  border: 1.5px solid var(--red);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+}
+
+.member-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-heading {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 700;
+  font-size: 2rem;
+  color: var(--red);
+  margin: 40px 0 14px;
+}
+
+/* ====================================================
+   SITE THEME: dark crimson (applies to every page via <body class="rs-theme">)
+   Sizes follow the Figma frame (1440 px wide).
+   ==================================================== */
+.rs-theme {
+  min-height: 100vh;
+  color: var(--cream-text);
+  background: linear-gradient(180deg, #C00038 0%, #A0002F 35%, #5C0F25 75%, #431322 100%) no-repeat;
+  background-size: cover;
+}
+
+/* ----- Navbar ----- */
+.rs-theme .site-nav {
+  background: transparent;
+  max-width: 1440px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  padding: 34px 73px 0 42px;
+  justify-content: flex-start;
+  flex-wrap: nowrap;
+  gap: 0;
+}
+
+.rs-theme .site-brand { gap: 36px; }
+
+.rs-theme .logo-img {
+  width: 92px;
+  height: 92px;
+  border-radius: 0;
+}
+
+.rs-theme .brand-text {
+  font-family: 'Nova Square', sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  font-size: 48px;
+  line-height: 1;
+  color: var(--cream-text);
+  text-shadow: 2px 3px 4px rgba(0, 0, 0, 0.3);
+}
+
+.rs-theme .nav-links {
+  margin-left: auto;
+  margin-right: 65px;
+  gap: 36px;
+}
+
+.rs-theme .nav-links a,
+.rs-theme .nav-login {
+  font-size: 24px;
+  color: var(--cream-text);
+}
+
+.rs-theme .nav-links a:hover,
+.rs-theme .nav-login:hover { color: #fff; }
+
+/* Cream buttons */
+.rs-theme .rs-btn {
+  background: var(--cream-text);
+  color: var(--red-dark);
+  font-size: 24px;
+  line-height: 1.2;
+  padding: 6px 30px;
+  border: 1px solid #7a1020;
+  border-radius: 4px;
+  box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.35);
+}
+
+.rs-theme .rs-btn:hover {
+  background: #fff;
+  color: var(--red-dark);
+}
+
+.rs-theme .rs-btn-sm {
+  box-sizing: border-box;
+  padding: 5px 30px;
+}
+
+/* ----- Layout ----- */
+.home-main {
+  position: relative;
+  overflow: hidden;
+}
+
+.stage {
+  position: relative;
+  max-width: 1440px;
+  margin: 0 auto;
+}
+
+.hero {
+  position: relative;
+  z-index: 1;
+  padding: 36px 40px 120px 75px;
+}
+
+.hero-title {
+  font-family: 'Nova Square', sans-serif;
+  font-weight: 400;
+  font-size: 70px;
+  line-height: 80px;
+  color: var(--cream-text);
+  text-shadow: 2px 3px 4px rgba(0, 0, 0, 0.3);
+  margin: 0 0 3px;
+}
+
+.hero-text {
+  max-width: 883px;
+  font-family: 'Nova Square', sans-serif;
+  font-size: 24px;
+  line-height: 45px;
+  color: var(--cream-text);
+  margin: 0 0 25px;
+}
+
+.hero-sub {
+  max-width: 780px;
+  margin-bottom: 52px;
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 53px;
+  margin: 0 0 46px -8px;
+}
+
+.hero-actions .rs-btn {
+  box-sizing: border-box;
+  min-width: 280px;
+  padding: 6px 45px;
+  text-align: center;
+}
+
+/* "Did you know?" glass card */
+.fact-card {
+  max-width: 678px;
+  box-sizing: border-box;
+  margin-left: -13px;
+  padding: 33px 45px 34px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 243, 214, 0.55);
+  border-radius: 40px;
+  color: var(--cream-text);
+}
+
+.fact-heading {
+  font-family: 'Lobster Two', cursive;
+  font-style: italic;
+  font-weight: 700;
+  font-size: 48px;
+  line-height: 55px;
+  margin: 0 0 11px;
+  color: var(--cream-text);
+}
+
+.fact-title {
+  font-family: 'Nova Square', sans-serif;
+  font-size: 24px;
+  line-height: 36px;
+  margin: 0 0 15px;
+}
+
+.fact-body {
+  font-size: 24px;
+  line-height: 36px;
+  margin: 0 0 17px;
+}
+
+.fact-source {
+  font-size: 18px;
+  line-height: 27px;
+  margin: 0;
+}
+
+.fact-source a {
+  color: var(--cream-text);
+  text-decoration: underline;
+}
+
+/* ----- Images and decorations ----- */
+.home-heart {
+  position: absolute;
+  z-index: 0;
+  top: 285px;
+  right: 82px;
+  width: 498px;
+  height: auto;
+  pointer-events: none;
+}
+
+.cells {
+  position: absolute;
+  z-index: 0;
+  pointer-events: none;
+}
+/* The cell PNGs have transparent padding, so they are sized larger than the
+   visible cells and pushed partly off-screen like in the Figma frame. */
+.cells-top    { top: -50px;    right: -70px; width: min(30vw, 440px); height: auto; }
+.cells-bottom { bottom: -60px; left: -90px;  width: min(30vw, 440px); height: auto; }
+
+/* Community cards on the dark background */
+.rs-theme .section-heading { color: var(--cream-text); margin-top: 60px; }
+
+.rs-theme .rs-card {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--cream-text);
+  border: 1px solid rgba(255, 243, 214, 0.45);
+  box-shadow: none;
+}
+
+.rs-theme .card-link { color: var(--cream-text); }
+.rs-theme .card-link:hover { color: #fff; }
+
+.rs-theme .pill-outline {
+  color: var(--cream-text);
+  border-color: rgba(255, 243, 214, 0.7);
+}
+
+/* ----- Smaller screens ----- */
+@media (max-width: 1200px) {
+  .rs-theme .site-nav { padding: 24px 28px 0; }
+  .rs-theme .site-brand { gap: 20px; }
+  .rs-theme .logo-img { width: 72px; height: 72px; }
+  .rs-theme .brand-text { font-size: 36px; }
+  .rs-theme .nav-links { margin-right: 28px; gap: 24px; }
+  .rs-theme .nav-links a,
+  .rs-theme .nav-login { font-size: 20px; }
+  .hero { padding: 30px 32px 100px; }
+  .hero-title { font-size: 54px; line-height: 62px; }
+  .hero-text { font-size: 20px; line-height: 36px; }
+  .hero-actions { margin-left: 0; gap: 24px; }
+  .fact-card { margin-left: 0; }
+  .home-heart { width: 40vw; right: 2vw; opacity: 0.35; }
+}
+
+@media (max-width: 760px) {
+  .rs-theme .site-nav { flex-wrap: wrap; gap: 12px; }
+  .rs-theme .nav-links { order: 3; width: 100%; justify-content: center; margin: 0; }
+  .rs-theme .logo-img { width: 56px; height: 56px; }
+  .rs-theme .brand-text { font-size: 28px; }
+  .hero { padding: 24px 20px 100px; }
+  .hero-title { font-size: 38px; line-height: 46px; }
+  .hero-text { font-size: 18px; line-height: 32px; }
+  .hero-actions .rs-btn { min-width: 0; width: 100%; box-sizing: border-box; }
+  .fact-card { padding: 24px 24px; border-radius: 28px; }
+  .fact-heading { font-size: 36px; line-height: 42px; }
+  .fact-title, .fact-body { font-size: 18px; line-height: 28px; }
+  .home-heart { width: 70vw; right: -10vw; opacity: 0.25; }
+}
+
+/* ====================================================
+   OTHER PAGES: same crimson look as the home page
+   ==================================================== */
+.rs-theme main.container {
+  position: relative;
+  z-index: 1;
+  padding-bottom: 80px;
+}
+
+/* Fixed corner decorations on every page except home (home has its own) */
+.cells-fixed { position: fixed; }
+
+.flash {
+  position: relative;
+  z-index: 1;
+  max-width: 900px;
+  margin: 16px auto 0;
+  padding: 10px 20px;
+  background: rgba(255, 243, 214, 0.15);
+  border: 1px solid rgba(255, 243, 214, 0.5);
+  border-radius: 12px;
+  color: var(--cream-text);
+}
+
+/* Headings */
+.rs-theme .page-title,
+.rs-theme main > h2,
+.rs-theme main .container > h2 {
+  font-family: 'Nova Square', sans-serif;
+  font-weight: 400;
+  font-size: 44px;
+  line-height: 1.15;
+  color: var(--cream-text);
+  text-shadow: 2px 3px 4px rgba(0, 0, 0, 0.3);
+  margin: 10px 0 22px;
+}
+
+.rs-theme .rs-card h2,
+.rs-theme .rs-card h3,
+.rs-theme .card h3,
+.rs-theme .card-header strong,
+.rs-theme .learn-cat {
+  font-family: 'Nova Square', sans-serif;
+  font-weight: 400;
+  color: var(--cream-text);
+}
+
+.rs-theme .rs-card h2 { font-size: 32px; }
+.rs-theme .rs-card h3,
+.rs-theme .card h3 { font-size: 24px; }
+
+.rs-theme .learn-cat {
+  font-size: 28px;
+  margin: 34px 0 14px;
+  text-shadow: 2px 3px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Muted text */
+.rs-theme .muted,
+.rs-theme .text-muted,
+.rs-theme small {
+  color: rgba(255, 243, 214, 0.72) !important;
+}
+
+/* Links inside page content */
+.rs-theme main a:not(.rs-btn):not(.btn):not(.card-link) {
+  color: var(--cream-text);
+  text-decoration: underline;
+}
+.rs-theme main a:not(.rs-btn):not(.btn):not(.card-link):hover { color: #fff; }
+
+.rs-theme hr {
+  border-color: rgba(255, 243, 214, 0.5);
+  opacity: 1;
+}
+
+/* Cards: the existing .rs-card glass look is reused everywhere */
+.rs-theme .rs-card { margin-bottom: 0; }
+.rs-theme .form-card { max-width: 600px; margin: 20px auto; }
+
+/* Bootstrap cards used on profile / health pages -> same glass look */
+.rs-theme .card {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--cream-text);
+  border: 1px solid rgba(255, 243, 214, 0.45);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.rs-theme .card-header {
+  background: rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(255, 243, 214, 0.35);
+  color: var(--cream-text);
+}
+.rs-theme .list-group-item {
+  background: transparent;
+  color: var(--cream-text);
+  border-color: rgba(255, 243, 214, 0.3);
+}
+
+/* Buttons */
+.rs-theme button.rs-btn { cursor: pointer; }
+
+.rs-theme .rs-btn-ghost {
+  background: transparent;
+  color: var(--cream-text);
+  border: 1px solid var(--cream-text);
+  box-shadow: none;
+}
+.rs-theme .rs-btn-ghost:hover { background: rgba(255, 243, 214, 0.18); color: #fff; }
+
+.rs-theme .rs-btn-sm { font-size: 18px; padding: 5px 22px; }
+
+/* Bootstrap buttons -> cream/ghost */
+.rs-theme .btn-primary {
+  background: var(--cream-text);
+  color: var(--red-dark);
+  border: 1px solid #7a1020;
+  font-family: 'Fira Sans Condensed', sans-serif;
+  font-weight: 600;
+  box-shadow: 2px 3px 6px rgba(0, 0, 0, 0.35);
+}
+.rs-theme .btn-primary:hover { background: #fff; color: var(--red-dark); }
+.rs-theme .btn-secondary {
+  background: transparent;
+  color: var(--cream-text);
+  border: 1px solid var(--cream-text);
+}
+.rs-theme .btn-secondary:hover { background: rgba(255, 243, 214, 0.18); color: #fff; }
+
+/* Pills / badges on the dark background */
+.rs-theme .pill {
+  background: var(--cream-text);
+  color: var(--red-dark);
+  font-weight: 600;
+}
+.rs-theme .pill-outline {
+  background: transparent;
+  color: var(--cream-text);
+  border: 1.5px solid rgba(255, 243, 214, 0.7);
+}
+
+/* Form fields */
+.rs-theme input:not([type=checkbox]):not([type=radio]):not([type=file]),
+.rs-theme select,
+.rs-theme textarea {
+  background: #FFF8EA;
+  color: #3a0a14;
+  border: 1px solid rgba(255, 243, 214, 0.6);
+  border-radius: 6px;
+}
+.rs-theme input:focus,
+.rs-theme select:focus,
+.rs-theme textarea:focus {
+  outline: 2px solid var(--cream-text);
+  outline-offset: 1px;
+}
+.rs-theme label { color: var(--cream-text); }
+.rs-theme form { max-width: 600px; }
+.rs-theme .form-card form,
+.rs-theme .card form { max-width: none; }
+
+.rs-theme .avatar { border-color: var(--cream-text); }

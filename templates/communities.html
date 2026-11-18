@@ -1,22 +1,24 @@
 {% extends "base.html" %}
 {% block title %}Communities - Red String{% endblock %}
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center;">
-    <h2>Communities</h2>
+<div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;">
+    <h2 class="page-title" style="margin: 0;">Communities</h2>
     {% if current_user.is_authenticated %}
-    <a href="{{ url_for('create_community') }}" style="padding: 10px 20px; background: #9b0000; color: white; text-decoration: none; border-radius: 4px;">Create Community</a>
+    <a href="{{ url_for('create_community') }}" class="rs-btn rs-btn-sm">Create Community</a>
     {% endif %}
 </div>
 
 {% if communities %}
+<div class="card-grid">
     {% for c in communities %}
-    <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd; margin-bottom: 15px;">
-        <h3><a href="{{ url_for('community_detail', community_id=c.id) }}" style="color: #9b0000; text-decoration: none;">{{ c.name }}</a></h3>
+    <div class="rs-card">
+        <h3 style="margin-top: 0;"><a href="{{ url_for('community_detail', community_id=c.id) }}" class="card-link">{{ c.name }}</a></h3>
         <p>{{ c.description or 'No description yet.' }}</p>
-        <p style="color: #666;">{{ c.members | length }} member{{ '' if c.members | length == 1 else 's' }}</p>
+        <span class="pill pill-outline">{{ c.member_count }} member{{ '' if c.member_count == 1 else 's' }}</span>
     </div>
     {% endfor %}
+</div>
 {% else %}
-    <p style="color: #666; font-style: italic;">No communities yet. Be the first to create one!</p>
+    <p class="muted" style="font-style: italic;">No communities yet. Be the first to create one!</p>
 {% endif %}
 {% endblock %}

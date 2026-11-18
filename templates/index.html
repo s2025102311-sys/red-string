@@ -1,34 +1,65 @@
 {% extends "base.html" %}
 
+{# Dark crimson theme applies to the home page only #}
+{% block body_class %}home-page{% endblock %}
+{% block main_class %}home-main{% endblock %}
+{# home draws its own corner cells below #}
+{% block cells %}{% endblock %}
+
 {% block content %}
-  <h1>Welcome to Red String</h1>
-  <p class="lead">
-    Legend says an invisible red string links people who are meant to find each
-    other. Here, that string is real. It runs from every donor to a patient they
-    may never meet, and every donation pulls it tighter.
-  </p>
-  <p>Connect with donors, track your donations, and join like-minded communities.</p>
+  <!-- Faint "blood cell" artwork in the corners (from the Figma design) -->
+  <img src="{{ url_for('static', filename='images/cells-top.png') }}" class="cells cells-top" alt="">
+  <img src="{{ url_for('static', filename='images/cells-bottom.png') }}" class="cells cells-bottom" alt="">
 
-  <p style="margin: 20px 0;">
-    <a href="{{ url_for('profile') }}"
-       style="background: #800020; color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; margin-right: 10px;">
-      Complete My Profile
-    </a>
-    <a href="{{ url_for('communities') }}"
-       style="border: 2px solid #800020; color: #800020; padding: 8px 20px; border-radius: 6px; text-decoration: none;">
-      Explore Communities
-    </a>
-  </p>
+  <div class="stage">
+    <img src="{{ url_for('static', filename='images/heart.png') }}" class="home-heart" alt="">
 
-  {% if fact %}
-  <div style="background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd; border-left: 5px solid #9b0000; margin-top: 20px;">
-    <h3 style="margin-top: 0;">Did you know?</h3>
-    <p><strong>{{ fact.title }}</strong></p>
-    <p>{{ fact.body }}</p>
-    <p style="color: #666; font-size: 0.9em;">
-      {% if fact.source %}Source: {{ fact.source }} &middot; {% endif %}
-      <a href="{{ url_for('learn') }}">More on the Learn page</a>
-    </p>
+    <section class="hero">
+      <h1 class="hero-title">Welcome to Red String</h1>
+
+      <p class="hero-text">
+        Legend says an invisible red string links people who are meant to find each
+        other. Here, that string is real. It runs from every donor to a patient they
+        may never meet, and every donation pulls it tighter.
+      </p>
+      <p class="hero-text hero-sub">
+        Connect with donors, track your donations, and join like-minded communities.
+      </p>
+
+      <div class="hero-actions">
+        {% if current_user.is_authenticated %}
+          <a href="{{ url_for('edit_profile') }}" class="rs-btn">Edit My Profile</a>
+        {% else %}
+          <a href="{{ url_for('register') }}" class="rs-btn">Become a Donor</a>
+        {% endif %}
+        <a href="{{ url_for('communities') }}" class="rs-btn">Explore Communities</a>
+      </div>
+
+      {% if fact %}
+      <div class="fact-card">
+        <h2 class="fact-heading">Did you know?</h2>
+        <p class="fact-title">{{ fact.title }}</p>
+        <p class="fact-body">{{ fact.body }}</p>
+        <p class="fact-source">
+          {% if fact.source %}Source: {{ fact.source }} &middot; {% endif %}
+          <a href="{{ url_for('learn') }}">More on the Learn page</a>
+        </p>
+      </div>
+      {% endif %}
+
+      {% if recent_communities %}
+      <h2 class="section-heading">Communities to join</h2>
+      <div class="card-grid">
+        {% for c in recent_communities %}
+        <div class="rs-card">
+          <h3 style="margin-top: 0;"><a href="{{ url_for('community_detail', community_id=c.id) }}" class="card-link">{{ c.name }}</a></h3>
+          <p>{{ (c.description or 'No description yet.') | truncate(90) }}</p>
+          <span class="pill pill-outline">{{ c.member_count }} member{{ '' if c.member_count == 1 else 's' }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <p style="margin-top: 14px;"><a href="{{ url_for('communities') }}" class="card-link">See all communities &rarr;</a></p>
+      {% endif %}
+    </section>
   </div>
-  {% endif %}
 {% endblock %}
