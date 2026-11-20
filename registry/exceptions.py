@@ -4,7 +4,7 @@ to show to the user, so the web layer can turn any of them into a friendly flash
 
 class RegistryError(Exception):
     """Base class for every error this application raises on purpose."""
-    category = "error"       # used as the flash category
+    category = "error"      
 
 
 class ValidationError(RegistryError):

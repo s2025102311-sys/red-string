@@ -6,10 +6,10 @@ from pymysql.cursors import DictCursor
 
 from .exceptions import DatabaseError, DuplicateError, RegistryError
 
-try:                                   # .env is optional; real environment variables also work
+try:                                   
     from dotenv import load_dotenv
     load_dotenv()
-except ImportError:                    # pragma: no cover
+except ImportError:                    
     pass
 
 MYSQL_DUPLICATE_KEY = 1062
@@ -44,12 +44,12 @@ def split_statements(script):
     in_comment = False
     previous = ""
     for ch in script:
-        if in_comment:                               # "-- comment" runs to the end of the line
+        if in_comment:                              
             if ch == "\n":
                 in_comment = False
             continue
         if not quote and ch == "-" and previous == "-":
-            current.pop()                            # drop the first '-' we already kept
+            current.pop()                           
             in_comment = True
             previous = ""
             continue
