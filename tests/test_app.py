@@ -57,3 +57,42 @@ def test_login_required_redirects_to_login(client):
 def test_unknown_page_is_a_normal_404(client):
     c, _ = client
     assert c.get("/nope").status_code == 404
+
+
+def _community_page_client(tmp_path):
+    community = {"id": 1, "name": "Naga Donors", "description": "Hi", "created_by": 1, "member_count": 3}
+
+    def member(uid, username, name, blood, loc, public):
+        return {"u_id": uid, "username": username, "email": f"{username}@mail.com", "p_id": uid,
+                "p_full_name": name, "p_location": loc, "p_sex": None, "p_birthdate": None,
+                "p_blood_type": blood, "p_bio": None, "p_picture": "default.jpg", "p_is_public": public}
+
+    conn = FakeConnection([
+        ("WHERE c.id", [community]),
+        ("FROM community_members cm JOIN users", [
+            member(1, "maria", "Maria Santos", "O+", "Naga City", True),
+            member(2, "jose", "Jose Reyes", "A-", "Legazpi", True),
+            member(3, "hiddenone", "Hidden One", "B+", "Manila", False)]),
+    ])
+    app = create_app(conn_factory=lambda: conn, upload_folder=str(tmp_path))
+    return app.test_client()
+
+
+def test_community_page_shows_search_box_and_all_members(tmp_path):
+    html = _community_page_client(tmp_path).get("/communities/1").get_data(as_text=True)
+    assert 'name="q"' in html and "Maria Santos" in html and "Jose Reyes" in html
+    assert html.count("hidden>") <= 3                       # nothing filtered out without a search
+
+
+def test_community_search_hides_non_matches_without_javascript(tmp_path):
+    html = _community_page_client(tmp_path).get("/communities/1?q=santos").get_data(as_text=True)
+    assert "Showing 1 of 3 members" in html
+    jose_card = html[html.index('href="/u/jose"'):]
+    assert "hidden" in jose_card.split(">")[0] + jose_card.split(">")[1]      # Jose's card is hidden
+
+
+def test_community_search_never_exposes_private_member(tmp_path):
+    html = _community_page_client(tmp_path).get("/communities/1?q=hiddenone").get_data(as_text=True)
+    assert "Showing 0 of 3 members" in html and "No members match" in html
+    assert "Hidden One" not in html and "hiddenone" not in html.replace('value="hiddenone"', "").replace(
+        '<span id="member-search-term">hiddenone</span>', "")

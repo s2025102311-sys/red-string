@@ -77,7 +77,10 @@ def create_app(conn_factory=None, upload_folder=None):
             if store.exists(name):
                 return url_for("static", filename="uploads/" + name)
             return url_for("static", filename="images/default_avatar.svg")
-        return {"today": date.today().isoformat(), "avatar_url": avatar_url}
+        def search_text(member):
+            return get_services().communities.search_text(member)
+        return {"today": date.today().isoformat(), "avatar_url": avatar_url,
+                "search_text": search_text}
 
     # ------------------------------------------------------------ error handling
     def safe_back():
@@ -220,9 +223,12 @@ def create_app(conn_factory=None, upload_folder=None):
     @app.route("/communities/<int:community_id>")
     def community_detail(community_id):
         viewer = current_user.id if current_user.is_authenticated else None
-        community, members, is_member = get_services().communities.detail(community_id, viewer)
+        s = get_services()
+        community, members, is_member = s.communities.detail(community_id, viewer)
+        q = (request.args.get("q") or "").strip()[:60]          # member search box
         return render_template("community_detail.html", community=community,
-                               members=members, is_member=is_member)
+                               members=members, is_member=is_member, q=q,
+                               matched_ids=s.communities.matching_member_ids(members, q))
 
     @app.route("/communities/<int:community_id>/join", methods=["POST"])
     @login_required

@@ -222,6 +222,29 @@ class CommunityService:
         is_member = viewer_id is not None and any(m.id == viewer_id for m in members)
         return community, members, is_member
 
+    @staticmethod
+    def search_text(member):
+        """Lower-case text a member can be found by: name, username, blood type, location.
+        PRIVATE members have no searchable text, so a search can never reveal who they are."""
+        profile = member.profile
+        if not (profile and profile.is_public):
+            return ""
+        parts = (profile.full_name, member.username, profile.blood_type, profile.location)
+        return " ".join(p for p in parts if p).lower()
+
+    def matching_member_ids(self, members, query):
+        """Ids of the members matching the search box. Every word typed must match
+        somewhere (so "maria o+" finds Maria with blood type O+). Empty search = everyone."""
+        terms = (query or "").lower().split()
+        if not terms:
+            return {m.id for m in members}
+        found = set()
+        for m in members:
+            text = self.search_text(m)
+            if text and all(t in text for t in terms):
+                found.add(m.id)
+        return found
+
     def create(self, user_id, name, description):
         """Community row + creator's membership row: ONE transaction, two tables."""
         community = Community(name, description, created_by=user_id)       # validates

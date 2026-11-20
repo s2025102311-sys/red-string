@@ -767,3 +767,48 @@ a.member-card:hover .member-photo img { transform: scale(1.05); }
 
 /* let the community page use the wider width (4 cards per row) */
 .rs-theme main.container:has(.community-page) { max-width: 1160px; }
+
+/* ---- member search ---- */
+.member-card[hidden] { display: none; }
+.member-search {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0 0 8px;
+}
+.member-search input[type="search"] {
+  flex: 1 1 280px;
+  min-width: 0;
+  padding: 10px 20px;
+  font-family: 'Poppins', Arial, sans-serif;
+  font-size: 15px;
+  color: var(--cream-text);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 243, 214, 0.45);
+  border-radius: 999px;
+}
+.member-search input[type="search"]::placeholder { color: rgba(255, 243, 214, 0.65); }
+.member-search input[type="search"]:focus {
+  outline: none;
+  background: rgba(255, 255, 255, 0.16);
+  border-color: var(--cream-text);
+  box-shadow: 0 0 0 3px rgba(255, 243, 214, 0.25);
+}
+.member-search-clear {
+  color: var(--cream-text);
+  font-size: 14px;
+  text-decoration: underline;
+}
+.member-search-clear[hidden], .member-search-empty[hidden] { display: none; }
+.member-search-status {
+  min-height: 22px;
+  margin: 0 0 12px 6px;
+  font-size: 14px;
+  color: rgba(255, 243, 214, 0.8);
+}
+.member-search-empty {
+  margin: 8px 0 0;
+  font-style: italic;
+  color: var(--cream-text);
+}

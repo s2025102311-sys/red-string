@@ -23,13 +23,29 @@
 
     <section class="members-section">
         <h3 class="members-title">Members <span class="members-count">{{ members | length }}</span></h3>
-        <div class="member-grid">
+
+        <form class="member-search" id="member-search" method="get" role="search"
+              action="{{ url_for('community_detail', community_id=community.id) }}">
+            <input type="search" name="q" id="member-search-input" value="{{ q }}" maxlength="60"
+                   placeholder="Search members by name, username, blood type or location"
+                   aria-label="Search members" autocomplete="off">
+            <button type="submit" class="rs-btn rs-btn-sm">Search</button>
+            <a href="{{ url_for('community_detail', community_id=community.id) }}"
+               id="member-search-clear" class="member-search-clear" {% if not q %}hidden{% endif %}>Clear</a>
+        </form>
+        <p class="member-search-status" id="member-search-status" aria-live="polite">
+            {% if q %}Showing {{ matched_ids | length }} of {{ members | length }} members{% endif %}
+        </p>
+
+        <div class="member-grid" id="member-grid">
             {% for m in members %}
             {% set public = m.profile and m.profile.is_public %}
             {% if public %}
-            <a class="member-card" href="{{ url_for('public_profile', username=m.username) }}">
+            <a class="member-card" data-search="{{ search_text(m) }}"
+               href="{{ url_for('public_profile', username=m.username) }}"
+               {% if q and m.id not in matched_ids %}hidden{% endif %}>
             {% else %}
-            <div class="member-card member-card-private">
+            <div class="member-card member-card-private" {% if q %}hidden{% endif %}>
             {% endif %}
                 <div class="member-photo">
                     <img src="{{ avatar_url(m.profile) if public else url_for('static', filename='images/default_avatar.svg') }}"
@@ -51,6 +67,9 @@
             {% if public %}</a>{% else %}</div>{% endif %}
             {% endfor %}
         </div>
+        <p class="member-search-empty" id="member-search-empty" {% if not q or matched_ids %}hidden{% endif %}>
+            No members match &ldquo;<span id="member-search-term">{{ q }}</span>&rdquo;.
+        </p>
     </section>
 
     <div class="rs-card community-narrow">
@@ -75,4 +94,41 @@
         {% endif %}
     </div>
 </div>
+
+<script>
+/* Live member search. Without JavaScript the form still works (the server filters). */
+(function () {
+    var form = document.getElementById('member-search');
+    var input = document.getElementById('member-search-input');
+    var cards = document.querySelectorAll('#member-grid .member-card');
+    var status = document.getElementById('member-search-status');
+    var empty = document.getElementById('member-search-empty');
+    var term = document.getElementById('member-search-term');
+    var clear = document.getElementById('member-search-clear');
+    var total = cards.length;
+
+    function apply() {
+        var raw = input.value.trim();
+        var words = raw.toLowerCase().split(/\s+/).filter(Boolean);
+        var shown = 0;
+        cards.forEach(function (card) {
+            var text = card.dataset.search;           // private members have none
+            var match = !words.length || (text && words.every(function (w) { return text.indexOf(w) !== -1; }));
+            card.hidden = !match;
+            if (match) shown++;
+        });
+        status.textContent = words.length ? 'Showing ' + shown + ' of ' + total + ' members' : '';
+        term.textContent = raw;
+        empty.hidden = !words.length || shown > 0;
+        clear.hidden = !words.length;
+        var url = new URL(window.location);
+        if (raw) url.searchParams.set('q', raw); else url.searchParams.delete('q');
+        history.replaceState(null, '', url);
+    }
+
+    input.addEventListener('input', apply);
+    form.addEventListener('submit', function (e) { e.preventDefault(); apply(); });
+    clear.addEventListener('click', function (e) { e.preventDefault(); input.value = ''; apply(); input.focus(); });
+})();
+</script>
 {% endblock %}

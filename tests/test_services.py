@@ -129,3 +129,46 @@ def test_private_profile_is_hidden_from_others_but_not_the_owner():
     with pytest.raises(PrivateProfileError):
         services(conn).profiles.public_view("maria", viewer_id=99)
     assert services(conn).profiles.public_view("maria", viewer_id=1)["user"].id == 1
+
+
+# ---------------------------------------------------------------- community member search
+def _member(uid, username, full_name=None, blood=None, location=None, public=True):
+    from registry.models import Profile, User
+    profile = Profile(uid, full_name=full_name, location=location, blood_type=blood, is_public=public)
+    return User(username=username, email=f"{username}@mail.com", id=uid, profile=profile)
+
+
+def _search(members, query):
+    return services(FakeConnection()).communities.matching_member_ids(members, query)
+
+
+def test_member_search_matches_name_username_blood_type_and_location():
+    members = [_member(1, "maria", "Maria Santos", "O+", "Naga City"),
+               _member(2, "jose", "Jose Reyes", "A-", "Legazpi")]
+    assert _search(members, "santos") == {1}
+    assert _search(members, "JOSE") == {2}                  # case-insensitive, username or name
+    assert _search(members, "o+") == {1}
+    assert _search(members, "legazpi") == {2}
+
+
+def test_member_search_needs_every_word_to_match():
+    members = [_member(1, "maria", "Maria Santos", "O+", "Naga"),
+               _member(2, "mario", "Mario Cruz", "A+", "Naga")]
+    assert _search(members, "naga a+") == {2}
+    assert _search(members, "maria legazpi") == set()
+
+
+def test_empty_search_returns_everyone():
+    members = [_member(1, "maria"), _member(2, "jose", public=False)]
+    assert _search(members, "") == {1, 2} and _search(members, "   ") == {1, 2}
+
+
+def test_member_search_never_matches_private_members():
+    members = [_member(1, "secretdonor", "Secret Donor", "AB-", "Manila", public=False)]
+    assert _search(members, "secretdonor") == set()
+    assert _search(members, "ab-") == set()
+
+
+def test_member_without_profile_is_not_searchable():
+    from registry.models import User
+    assert _search([User(username="ghost", email="g@mail.com", id=3)], "ghost") == set()
