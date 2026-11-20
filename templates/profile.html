@@ -44,7 +44,7 @@
     <p>
       <strong>Weight:</strong>
       {% if latest_weight %}
-        {{ latest_weight.value }} kg (measured {{ latest_weight.date_measured.strftime('%b %d, %Y').replace(' 0', ' ') }})
+        {{ latest_weight.describe() }} (measured {{ latest_weight.date_measured.strftime('%b %d, %Y').replace(' 0', ' ') }})
       {% else %}
         Not recorded yet
       {% endif %}
@@ -53,7 +53,7 @@
     <p>
       <strong>Height:</strong>
       {% if latest_height %}
-        {{ latest_height.value }} cm (measured {{ latest_height.date_measured.strftime('%b %d, %Y').replace(' 0', ' ') }})
+        {{ latest_height.describe() }} (measured {{ latest_height.date_measured.strftime('%b %d, %Y').replace(' 0', ' ') }})
       {% else %}
         Not recorded yet
       {% endif %}

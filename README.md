@@ -1,9 +1,9 @@
 # Red String - Blood Registry
 
-A community-driven blood donor networking platform (Flask + MySQL) for connecting donors,
-tracking donations, and building communities that save lives.
+A project meant to be a community-driven blood donor networking platform (Flask + MySQL) for connecting donors,
+tracking donations, and building communities that save lives and encourages more people to become donors, submitted for our Finals requirement.
 
-## User stories
+## Features
 1. As a visitor I can read blood-donation facts on the Home and Learn pages.
 2. As a visitor I can register and log in (passwords are hashed).
 3. As a donor I can edit my profile (name, blood type, bio, picture) and choose public or private.
@@ -70,9 +70,9 @@ tests/            pytest suite with a fake database
 | John Nico Tibayan  |Database models and login/register, public and edit profile, body and   |         |
 |                    |health information (weight, height, BMI, check-ups), donation history   |         |
 |                    |with points and badges, OOP domain models and custom exceptions,        |    8    |
-|                    |repositories and services with transactions, routes and templates       |         |
-|                    |rewired to services, pytest suite with fake database                    |         |
-
+|                    |prototype database, repositories and services with transactions,        |         |
+|                    |routes and templates rewired to services, pytest suite with             |         |
+|                    |fake database.                                                          |         |
 
 ## How we built this
 
